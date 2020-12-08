@@ -1,0 +1,2 @@
+To make the plots possible, you need to install next to the file a copy of a working R folder and if needed adjust the version in the file.
+The second point is to give access to the pandoc folder try to install it like the R folder or change the path in the file.
