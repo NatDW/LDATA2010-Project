@@ -17,16 +17,16 @@ import rpy2.robjects.numpy2ri
 base = rpackages.importr("base")
 utils = rpackages.importr("utils")
 
-df = pd.read_csv("ldata2010_small_dataset.csv")
+df = pd.read_csv("scenario1.csv")
 data = df.to_numpy()
-index = np.argmax(data[:, 0] == 0, axis=0)
+index = np.argmax(data[:, 0] == 100, axis=0)
 index = index if index > 0 else len(data)
 
 data = data[:index]
 
 edgeList = data[:index, 1:3].tolist()
 edgeList = [sorted(x) for x in edgeList]
-print(edgeList)
+
 edf = pd.DataFrame(edgeList)
 weight_edf = edf.pivot_table(index=[0, 1], aggfunc='size')
 
@@ -35,25 +35,17 @@ for x in data:
     tmp = sorted([x[1], x[2]])
     weight_edges.append(weight_edf[tmp[0], tmp[1]])
 np.asarray(weight_edges)
-print(weight_edges)
-
-print(weight_edf)
-print(np.where(np.all(np.isin(edgeList, [1, 2]), axis=1)))
 
 G = nx.Graph()
 for i in range(len(weight_edf.values)):
     G.add_edge(weight_edf.index[i][0], weight_edf.index[i][1], weight=weight_edf.iloc[i])
 matrix = nx.adjacency_matrix(G).A
 
-print(nx.shortest_path(G, 0, 2, weight='weight'))
-
 clusters = nx.clustering(G)
-print(np.unique(list(clusters.values()), return_counts=True))
+
 
 cmap = get_cmap('magma', 5)
 print(rgb2hex(cmap(4)))
-
-print(index)
 
 
 def main():
@@ -75,7 +67,7 @@ def main():
     ''')
     # print(ro.r.__getattribute__('s'))
     # adjacency_matrix(nodes, matrix)
-    hierarchicalRepulsion(person1, person2)
+    repulsion(person1, person2, spring_length=100, spring_constant=0, nodeDistance=100, damping=0.5)
     # plot_graph()
 
 
@@ -1753,6 +1745,7 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
             g <- graph.data.frame(data, directed = FALSE, vertices = nodes)
             g.vis <- toVisNetworkData(g)
             p <- visNetwork(g.vis$nodes, g.vis$edges, width="100%", height = 1080) %>% 
+            visOptions(highlightNearest = list(enabled = T, hover = T)) %>%
             visIgraphLayout()
             visSave(p, file = "test.html")
     ''')
