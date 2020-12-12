@@ -21,7 +21,7 @@ utils = rpackages.importr("utils")
 
 df = pd.read_csv("ldata2010_small_dataset.csv")
 data = df.to_numpy()
-index = np.argmax(data[:, 0] == 100, axis=0)
+index = np.argmax(data[:, 0] == 5, axis=0)
 index = index if index > 0 else len(data)
 
 data = data[:index]
@@ -68,7 +68,7 @@ def main():
     # print(ro.r.__getattribute__('s'))
     # adjacency_matrix(nodes, matrix)
     # repulsion(person1, person2, spring_length=100, spring_constant=0, nodeDistance=100, damping=0.5)
-    print(clusters_coordinates_encounter(11))
+    print(clusters_coordinates_encounter(3))
     # plot_graph()
 
 
@@ -175,6 +175,30 @@ def get_coordinates_encounter(timestep):
     return longitude, latitude
 
 
+def k_core(G, k=None):
+    core = list(nx.edges(nx.k_core(G, k)))
+    person1 = [None]*len(core)
+    person2 = [None]*len(core)
+
+    for i in range(len(core)):
+        person1[i] = core[i][0]
+        person2[i] = core[i][1]
+
+    return person1, person2
+
+
+def depth(G, source=None, depth=None):
+    edges = list(nx.dfs_edges(G, source, depth))
+    person1 = [None] * len(edges)
+    person2 = [None] * len(edges)
+
+    for i in range(len(edges)):
+        person1[i] = edges[i][0]
+        person2[i] = edges[i][1]
+
+    return person1, person2
+
+
 def adjacency_matrix(nodes_list, adj_matrix):
     ro.r.assign("nodes_list", nodes_list)
     ro.r.assign("adj_matrix", adj_matrix)
@@ -223,6 +247,7 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -243,6 +268,7 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -275,11 +301,11 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -309,6 +335,7 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -329,6 +356,7 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -362,11 +390,11 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -396,6 +424,7 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -416,6 +445,7 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -449,11 +479,11 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -484,6 +514,7 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -504,6 +535,7 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -537,11 +569,11 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -571,6 +603,7 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -591,6 +624,7 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -624,11 +658,11 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -654,6 +688,7 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -674,6 +709,7 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -707,11 +743,11 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -736,6 +772,7 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -756,6 +793,7 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -789,11 +827,11 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -819,6 +857,7 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -839,6 +878,7 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -872,11 +912,11 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -901,6 +941,7 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -921,6 +962,7 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -954,11 +996,11 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -984,6 +1026,7 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1004,6 +1047,7 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1037,11 +1081,11 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1066,6 +1110,7 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1086,6 +1131,7 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1119,11 +1165,11 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1149,6 +1195,7 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1169,6 +1216,7 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1202,11 +1250,11 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1234,6 +1282,7 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1254,6 +1303,7 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1287,11 +1337,11 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
                 x = longitude,
@@ -1322,6 +1372,7 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1342,6 +1393,7 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1375,11 +1427,11 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1404,6 +1456,7 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1424,6 +1477,7 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1457,11 +1511,11 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1486,6 +1540,7 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1506,6 +1561,7 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1539,11 +1595,11 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1568,6 +1624,7 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1588,6 +1645,7 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1621,11 +1679,11 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1650,6 +1708,7 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1670,6 +1729,7 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1703,11 +1763,11 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
@@ -1732,6 +1792,7 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
 
     mask = '#'
+    mask2 = '#'
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1752,6 +1813,7 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
                 color_border[i] = "lightgreen"
             else:
                 color_border[i] = "darkred"
+        mask2 = ''
 
     border_width = np.ceil(np.divide(nodes_size, 5))
 
@@ -1785,11 +1847,11 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
                 names = node_names,
                 size = nodes_size,
                 {mask}color.background = color_map,
-                {mask}color.border = color_border,
+                {mask2}color.border = color_border,
                 {mask}color.highlight.background = color_map,
-                {mask}color.highlight.border = color_border,
+                {mask2}color.highlight.border = color_border,
                 {mask}color.hover.background = color_map,
-                {mask}color.hover.border = color_border,
+                {mask2}color.hover.border = color_border,
                 group = group,
                 borderWidth = border_width
             )
