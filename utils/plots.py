@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 from matplotlib.colors import rgb2hex
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 from pylab import get_cmap
 import scipy
 import seaborn as sb
@@ -17,7 +19,7 @@ import rpy2.robjects.numpy2ri
 base = rpackages.importr("base")
 utils = rpackages.importr("utils")
 
-df = pd.read_csv("scenario1.csv")
+df = pd.read_csv("ldata2010_small_dataset.csv")
 data = df.to_numpy()
 index = np.argmax(data[:, 0] == 100, axis=0)
 index = index if index > 0 else len(data)
@@ -40,9 +42,7 @@ G = nx.Graph()
 for i in range(len(weight_edf.values)):
     G.add_edge(weight_edf.index[i][0], weight_edf.index[i][1], weight=weight_edf.iloc[i])
 matrix = nx.adjacency_matrix(G).A
-
-clusters = nx.clustering(G)
-
+nodes = nx.nodes(G)
 
 cmap = get_cmap('magma', 5)
 print(rgb2hex(cmap(4)))
@@ -67,8 +67,41 @@ def main():
     ''')
     # print(ro.r.__getattribute__('s'))
     # adjacency_matrix(nodes, matrix)
-    repulsion(person1, person2, spring_length=100, spring_constant=0, nodeDistance=100, damping=0.5)
+    # repulsion(person1, person2, spring_length=100, spring_constant=0, nodeDistance=100, damping=0.5)
+    print(clusters_coordinates_encounter(11))
     # plot_graph()
+
+
+def clustering_coefficient(G, weight=None):
+    return nx.clustering(G, weight=weight)
+
+
+def degree(G, weight=None):
+    return nx.degree(G, weight=weight)
+
+
+def degree_assortativity(G, weight=None):
+    return nx.clustering(G, weight=weight)
+
+
+def clusters_coordinates_home():
+    nodes_longitude, nodes_latitude = get_coordinates()
+    nodes_longitude = np.array(nodes_longitude).reshape(-1, 1)
+    nodes_latitude = np.array(nodes_latitude).reshape(-1, 1)
+    kmeans = KMeans(n_clusters=min(len(np.unique(nodes_longitude)), len(np.unique(nodes_latitude))))
+    kmeans.fit(nodes_longitude, nodes_latitude)
+    return kmeans.labels_
+
+
+def clusters_coordinates_encounter(timestep):
+    d = df.to_numpy()
+    nodes_id = list(np.unique(np.append(np.unique(d[d[:, 0] == timestep, 1]), np.unique(d[d[:, 0] == timestep, 2]))))
+    nodes_longitude, nodes_latitude = get_coordinates_encounter(timestep)
+    nodes_longitude = np.array(nodes_longitude).reshape(-1, 1)
+    nodes_latitude = np.array(nodes_latitude).reshape(-1, 1)
+    kmeans = KMeans(n_clusters=min(len(np.unique(nodes_longitude)), len(np.unique(nodes_latitude))))
+    kmeans.fit(nodes_longitude, nodes_latitude)
+    return d[d[:, 0] == timestep, 1], d[d[:, 0] == timestep, 2], kmeans.labels_
 
 
 def shortest_path(source, target, weight=None):
@@ -119,6 +152,25 @@ def get_coordinates():
             longitude[nodes_id.index(x[2])] = x[-1]
         if latitude[nodes_id.index(x[2])] is None:
             latitude[nodes_id.index(x[2])] = x[-2]
+
+    return longitude, latitude
+
+
+def get_coordinates_encounter(timestep):
+    d = df.to_numpy()
+    nodes_id = list(np.unique(np.append(np.unique(d[d[:, 0] == timestep, 1]), np.unique(d[d[:, 0] == timestep, 2]))))
+    longitude = [None] * len(nodes_id)
+    latitude = [None] * len(nodes_id)
+
+    for x in reversed(d[d[:, 0] == timestep]):
+        if longitude[nodes_id.index(x[1])] is None:
+            longitude[nodes_id.index(x[1])] = x[6]
+        if latitude[nodes_id.index(x[1])] is None:
+            latitude[nodes_id.index(x[1])] = x[5]
+        if longitude[nodes_id.index(x[2])] is None:
+            longitude[nodes_id.index(x[2])] = x[6]
+        if latitude[nodes_id.index(x[2])] is None:
+            latitude[nodes_id.index(x[2])] = x[5]
 
     return longitude, latitude
 
