@@ -68,7 +68,7 @@ def main():
     # print(ro.r.__getattribute__('s'))
     # adjacency_matrix(nodes, matrix)
     # repulsion(person1, person2, spring_length=100, spring_constant=0, nodeDistance=100, damping=0.5)
-    sphere_layout(person1, person2, path=[337, 78])
+    hierarchicalRepulsion(person1, person2, path=[337, 78])
     # plot_graph()
 
 
@@ -248,7 +248,6 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -339,7 +338,6 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -430,7 +428,6 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -522,7 +519,6 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -613,7 +609,6 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -701,7 +696,6 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -787,7 +781,6 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -874,7 +867,6 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -960,7 +952,6 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1047,7 +1038,6 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1133,7 +1123,6 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1220,7 +1209,6 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1309,7 +1297,6 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1401,7 +1388,6 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1487,7 +1473,6 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1573,7 +1558,6 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1659,7 +1643,6 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1745,7 +1728,6 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
@@ -1831,7 +1813,6 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
 
     if path is not None:
         color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-        mask2 = ''
 
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
