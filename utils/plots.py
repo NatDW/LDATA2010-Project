@@ -19,7 +19,7 @@ import rpy2.robjects.numpy2ri
 base = rpackages.importr("base")
 utils = rpackages.importr("utils")
 
-df = pd.read_csv("ldata2010_small_dataset.csv")
+df = pd.read_csv("scenario1.csv")
 data = df.to_numpy()
 index = np.argmax(data[:, 0] == 5, axis=0)
 index = index if index > 0 else len(data)
@@ -68,7 +68,7 @@ def main():
     # print(ro.r.__getattribute__('s'))
     # adjacency_matrix(nodes, matrix)
     # repulsion(person1, person2, spring_length=100, spring_constant=0, nodeDistance=100, damping=0.5)
-    print(clusters_coordinates_encounter(3))
+    sphere_layout(person1, person2, path=[337, 78])
     # plot_graph()
 
 
@@ -243,11 +243,13 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -278,6 +280,7 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -293,12 +296,12 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
                 from=person1,
                 to=person2,
                 width=edge_width,
-                color = color_edge
+                color = color_edge,
+                smooth = FALSE
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -331,11 +334,13 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -366,6 +371,7 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -384,10 +390,9 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -420,11 +425,13 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -455,6 +462,7 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -473,10 +481,9 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -510,11 +517,13 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -545,6 +554,7 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -563,10 +573,9 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -599,11 +608,13 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -634,6 +645,7 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -650,12 +662,12 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 from=person1,
                 to=person2,
                 width=edge_width,
-                color = color_edge
+                color = color_edge,
+                smooth = FALSE
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -684,11 +696,13 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -719,6 +733,7 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -737,10 +752,9 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -768,11 +782,13 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -803,6 +819,7 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -821,10 +838,9 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -853,11 +869,13 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -888,6 +906,7 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -906,10 +925,9 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -937,11 +955,13 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -972,6 +992,7 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -990,10 +1011,9 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1022,11 +1042,13 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1057,6 +1079,7 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1075,10 +1098,9 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1106,11 +1128,13 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1141,6 +1165,7 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1159,10 +1184,9 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1191,11 +1215,13 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1226,6 +1252,7 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1244,10 +1271,9 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1278,11 +1304,13 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1313,6 +1341,7 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1331,10 +1360,9 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1368,11 +1396,13 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1403,6 +1433,7 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1421,10 +1452,9 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1452,11 +1482,13 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1487,6 +1519,7 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1505,10 +1538,9 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1536,11 +1568,13 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1571,6 +1605,7 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1589,10 +1624,9 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1620,11 +1654,13 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1655,6 +1691,7 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1673,10 +1710,9 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1704,11 +1740,13 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1739,6 +1777,7 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1757,10 +1796,9 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
@@ -1788,11 +1826,13 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
 
     color_edge = np.array(["#7599c8"] * len(person1))
 
-    if path is not None:
-        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
-
     mask = '#'
     mask2 = '#'
+
+    if path is not None:
+        color_map, color_edge = shortest_path(path[0], path[1], weight=weight)
+        mask2 = ''
+
     nodes_id = list(np.unique(np.append(np.unique(data[:index, 1]), np.unique(data[:index, 2]))))
     color_border = np.array([None] * len(nodes_id))
     if color_map is None:
@@ -1823,6 +1863,7 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
     nodes_size = np.array(nodes_size)
     group = np.array(group)
 
+    ro.r.assign("nodes_id", np.array(nodes_id))
     ro.r.assign("color_map", color_map)
     ro.r.assign("edge_width", edge_width)
     ro.r.assign("color_edge", color_edge)
@@ -1841,10 +1882,9 @@ def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None,
                 width=edge_width,
                 color = color_edge
             )
-            node_names <- factor(sort(unique(c(as.character(data$from), 
-                                           as.character(data$to)))))
+
             nodes <- data.frame(
-                names = node_names,
+                names = nodes_id,
                 size = nodes_size,
                 {mask}color.background = color_map,
                 {mask2}color.border = color_border,
