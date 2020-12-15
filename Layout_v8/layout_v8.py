@@ -388,6 +388,11 @@ class Ui_MainWindow(object):
         self.tableView = QtWidgets.QTableView(self.tab_2)
         self.tableView.setGeometry(QtCore.QRect(0, 0, 691, 531))
         self.tableView.setObjectName("tableView")
+        self.tableView.setSortingEnabled(True)
+
+        self.header = self.tableView.horizontalHeader()
+        self.header.sectionClicked.connect(self.headerClicked)
+
         self.TabBrowserWidget.addTab(self.tab_2, "")
         ## NODE TABLE WIDGET
         self.tab_3 = QtWidgets.QWidget()
@@ -395,6 +400,11 @@ class Ui_MainWindow(object):
         self.tableView_2 = QtWidgets.QTableView(self.tab_3)
         self.tableView_2.setGeometry(QtCore.QRect(0, 0, 691, 531))
         self.tableView_2.setObjectName("tableView_2")
+        self.tableView_2.setSortingEnabled(True)
+
+        self.header_2 = self.tableView_2.horizontalHeader()
+        self.header_2.sectionClicked.connect(self.headerClicked_2)
+
         self.TabBrowserWidget.addTab(self.tab_3, "")
 
         # APPLY CHANGES BUTTON
@@ -476,6 +486,7 @@ class Ui_MainWindow(object):
         self.PlotFilterCombobox.setObjectName("PlotFilterCombobox")
         self.PlotFilterCombobox.addItem("")
         self.PlotFilterCombobox.setItemText(0, "")
+        self.PlotFilterCombobox.addItem("")
         self.PlotFilterCombobox.addItem("")
         self.PlotFilterCombobox.addItem("")
         self.PlotFilterCombobox.addItem("")
@@ -578,6 +589,7 @@ class Ui_MainWindow(object):
         self.PlotFilterCombobox.setItemText(2, _translate("MainWindow", "K-core"))
         self.PlotFilterCombobox.setItemText(3, _translate("MainWindow", "Depth"))
         self.PlotFilterCombobox.setItemText(4, _translate("MainWindow", "Cluster encounter coordinates"))
+        self.PlotFilterCombobox.setItemText(5, _translate("MainWindow", "Cluster home coordinates"))
         self.ShowInfectedCheckBox.setText(_translate("MainWindow", "Show infected nodes"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionUpload.setText(_translate("MainWindow", "Upload"))
@@ -625,6 +637,10 @@ class Ui_MainWindow(object):
             self.stackedWidget.setCurrentIndex(3)
             self.ShowInfectedCheckBox.setEnabled(False)
             self.ShowInfectedCheckBox.setChecked(False)
+        elif self.PlotFilterCombobox.currentText() == 'Cluster home coordinates':
+            self.stackedWidget.setCurrentIndex(3)
+            self.ShowInfectedCheckBox.setEnabled(False)
+            self.ShowInfectedCheckBox.setChecked(False)
 
     def getGraphType(self):
         '''
@@ -636,25 +652,25 @@ class Ui_MainWindow(object):
         if self.PlotSelectionCombobox.currentText() == 'Hierarchical repulsion':
             self.PlotOptionsStackedWidget.setCurrentIndex(1)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
-            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates':
+            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
                 self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Repulsion':
             self.PlotOptionsStackedWidget.setCurrentIndex(2)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
-            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates':
+            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
                 self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Barnes hut':
             self.PlotOptionsStackedWidget.setCurrentIndex(0)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
-            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates':
+            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
                 self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Forced atlas':
             self.PlotOptionsStackedWidget.setCurrentIndex(3)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
-            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates':
+            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
                 self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Clustering coefficient':
@@ -671,7 +687,7 @@ class Ui_MainWindow(object):
         else:
             self.PlotOptionsStackedWidget.setCurrentIndex(4)  
             self.PlotFilterCombobox.setEnabled(True)   # sets the filters available
-            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates':
+            if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
                 self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
 
 
@@ -709,12 +725,14 @@ class Ui_MainWindow(object):
         set_vars(data, index, self.plot_df, self.edgeList, self.graph)
 
         # Here we generate the table with the nodes properties
-        if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-            person1, person2, group = clusters_coordinates_encounter(timestep_value)
+        if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates' or self.PlotFilterCombobox.currentText() == 'Cluster home coordinates':
+            person1, person2, group1 = clusters_coordinates_encounter(timestep_value)
+            group2 = clusters_coordinates_home()
             self.df_nodes = pd.DataFrame()
             self.df_nodes['Node'] = sorted(list(np.unique(np.append(np.unique(person1), np.unique(person2)))))
             self.df_nodes['Infected'] = get_infected(person1, person2)
-            self.df_nodes['Cluster'] = group
+            self.df_nodes['Encounter cluster'] = group1
+            self.df_nodes['Home cluster'] = group1
 
         else:
             self.df_nodes = pd.DataFrame()
@@ -722,38 +740,49 @@ class Ui_MainWindow(object):
             self.df_nodes['Infected'] = get_infected(person1, person2)
             self.df_nodes['Clustering coef'] = nx.clustering(G).values()
 
+
         self.df_nodes.sort_values(by='Node', inplace=True)
         self.df_nodes.reset_index(drop=True, inplace=True)
         model = DataFrameModel(self.df_nodes)
         self.tableView_2.setModel(model)
 
-        if self.PlotSelectionCombobox.currentText() == 'Hierarchical repulsion':
+        path = None
+        infected = None
+        group = None
+        empty = False
+        if self.PlotFilterCombobox.currentText() == 'Shortest path':
+            path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
+        if self.PlotFilterCombobox.currentText() == 'K-core':
+            k = self.Kshell.value()
+            person1, person2 = k_core(self.graph, k=k)
+        if self.ShowInfectedCheckBox.isChecked():
+            infected = get_infected(person1, person2)
+        if self.PlotFilterCombobox.currentText() == 'Depth':
+            source = self.DepthSource.value()
+            plot_depth = self.DepthDepth.value()
+            person1, person2 = depth(self.graph, source=source, depth=plot_depth)
+        if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
+            person1, person2, group = clusters_coordinates_encounter(timestep_value)
+        if self.PlotFilterCombobox.currentText() == 'Cluster home coordinates':
+            group = clusters_coordinates_home()
+        if len(list(np.unique(np.append(np.unique(person1), np.unique(person2))))) == 0:
+            empty = True
+            f = open("test.html", 'w')
+            message = "<html>\n<head></head>\n<body><p>The graph is empty</p></body>\n</html>"
+            f.write(message)
+            f.close()
+
+        if self.PlotSelectionCombobox.currentText() == 'Hierarchical repulsion' and not empty:
             node_distance = self.hierarchical_node_distance.value()
             central_gravity = self.hierarchical_gravity.value()
             spring_length = self.hierarchical_springlength.value()
             spring_constant = self.hierarchical_springconstant.value()
             damping = self.hierarchical_damping.value()
-            path = None
-            infected = None
-            group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
                           path=path, weight=None, nodeDistance=node_distance, central_gravity=central_gravity, spring_length=spring_length,
                           spring_constant=spring_constant, damping=damping)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Repulsion':
+        elif self.PlotSelectionCombobox.currentText() == 'Repulsion' and not empty:
             node_distance = self.repulsion_node_distance.value()
             central_gravity = self.repulsion_gravity.value()
             spring_length = self.repulsion_springlength.value()
@@ -762,24 +791,11 @@ class Ui_MainWindow(object):
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
                           path=path, weight=None, nodeDistance=node_distance, central_gravity=central_gravity, spring_length=spring_length,
                           spring_constant=spring_constant, damping=damping)
             
-        elif self.PlotSelectionCombobox.currentText() == 'Barnes hut':
+        elif self.PlotSelectionCombobox.currentText() == 'Barnes hut' and not empty:
             gravity_constant = self.BarnesHut_GravityCtt.value()
             central_gravity = self.BarnesHut_CentralGravity.value()
             spring_length = self.BarnesHut_SpringLength.value()
@@ -789,24 +805,11 @@ class Ui_MainWindow(object):
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None, gravity_constant=gravity_constant, central_gravity=central_gravity, spring_length=spring_length,
               spring_constant=spring_constant, damping=damping, avoidOverlap=avoidOverlap)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Forced atlas':
+        elif self.PlotSelectionCombobox.currentText() == 'Forced atlas' and not empty:
             gravity_constant = self.ForcedAtlas_GravityCtt.value()
             central_gravity = self.ForcedAtlas_CentralGravity.value()
             spring_length = self.ForcedAtlas_SpringLength.value()
@@ -816,326 +819,118 @@ class Ui_MainWindow(object):
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
                  path=path, weight=None, gravity_constant=gravity_constant, central_gravity=central_gravity, spring_length=spring_length,
                  spring_constant=spring_constant, damping=damping, avoidOverlap=avoidOverlap)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Adjacency matrix':
+        elif self.PlotSelectionCombobox.currentText() == 'Adjacency matrix' and not empty:
             adjacency_matrix(self.nodes, self.matrix)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Clustering coefficient':
+        elif self.PlotSelectionCombobox.currentText() == 'Clustering coefficient' and not empty:
             hist_hover(self.df_nodes, 'Clustering coef', bins=30)
 
-        elif self.PlotSelectionCombobox.currentText() == 'DH layout':
+        elif self.PlotSelectionCombobox.currentText() == 'DH layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Sphere layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Sphere layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Sugiyama layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Sugiyama layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'MDS layout':
+        elif self.PlotSelectionCombobox.currentText() == 'MDS layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'LGL layout':
+        elif self.PlotSelectionCombobox.currentText() == 'LGL layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'KK layout':
+        elif self.PlotSelectionCombobox.currentText() == 'KK layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Graphopt layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Graphopt layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'FR layout':
+        elif self.PlotSelectionCombobox.currentText() == 'FR layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Star layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Star layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
         
-        elif self.PlotSelectionCombobox.currentText() == 'Grid layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Grid layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
         
-        elif self.PlotSelectionCombobox.currentText() == 'Geo layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Geo layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
         
-        elif self.PlotSelectionCombobox.currentText() == 'Tree layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Tree layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
         
-        elif self.PlotSelectionCombobox.currentText() == 'Gem layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Gem layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
         
-        elif self.PlotSelectionCombobox.currentText() == 'Circle layout':
+        elif self.PlotSelectionCombobox.currentText() == 'Circle layout' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
         
-        elif self.PlotSelectionCombobox.currentText() == 'Vis':
+        elif self.PlotSelectionCombobox.currentText() == 'Vis' and not empty:
             path = None
             infected = None
             group = None
-            if self.PlotFilterCombobox.currentText() == 'Shortest path':
-                path = [self.ShortestPathSource.value(), self.ShortestPathTarget.value()]
-            if self.PlotFilterCombobox.currentText() == 'K-core':
-                k = self.Kshell.value()
-                person1, person2 = k_core(self.graph, k=k)
-            if self.ShowInfectedCheckBox.isChecked():
-                infected = get_infected(person1, person2)
-            if self.PlotFilterCombobox.currentText() == 'Depth':
-                source = self.DepthSource.value()
-                plot_depth = self.DepthDepth.value()
-                person1, person2 = depth(self.graph, source=source, depth=plot_depth)
-            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
-                person1, person2, group = clusters_coordinates_encounter(timestep_value)
             visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
               path=path, weight=None)
 
@@ -1165,9 +960,6 @@ class Ui_MainWindow(object):
             self.PlotFilterCombobox.setEnabled(True) # disable comboBox for plot filters
             self.PlotSelectionCombobox.setEnabled(True) # disable comboBox for plot filters
             self.ShowInfectedCheckBox.setEnabled(True) # Disabe show infected combobox
-            # Then we generate the table
-            model = DataFrameModel(self.df)
-            self.tableView.setModel(model)
 
     def updateSliderLabel(self, value):
         '''
@@ -1175,6 +967,23 @@ class Ui_MainWindow(object):
         '''
         self.TimestepLabel.setText("Timestep: " + str(value))
 
+    def headerClicked(self, logicalIndex):
+        self.order = self.header.sortIndicatorOrder()
+        self.plot_df.sort_values(self.plot_df.columns[logicalIndex],
+                        ascending=self.order,inplace=True)
+        self.model = DataFrameModel(self.plot_df)
+        self.plot_df.reset_index(drop=True, inplace=True)
+        self.tableView.setModel(self.model)
+        self.tableView.update()
+
+    def headerClicked_2(self, logicalIndex):
+        self.order_2 = self.header_2.sortIndicatorOrder()
+        self.df_nodes.sort_values(self.df_nodes.columns[logicalIndex],
+                        ascending=self.order_2,inplace=True)
+        self.model = DataFrameModel(self.df_nodes)
+        self.df_nodes.reset_index(drop=True, inplace=True)
+        self.tableView_2.setModel(self.model)
+        self.tableView_2.update()
 
 if __name__ == "__main__":
     import sys
