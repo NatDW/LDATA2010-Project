@@ -37,6 +37,7 @@ ro.r(f'''
     require("hrbrthemes")
     require("viridis")
     require("heatmaply")
+    require("htmlwidgets")
     Sys.setenv(RSTUDIO_PANDOC="pandoc")
     s <- Sys.getenv("R.dll")
     ''')
@@ -721,7 +722,7 @@ class Ui_MainWindow(object):
         for i in range(len(self.weight_edf.values)):
             G.add_edge(self.weight_edf.index[i][0], self.weight_edf.index[i][1], weight=self.weight_edf.iloc[i])
         self.graph = G.copy()
-        self.matrix = nx.to_numpy_matrix(G)
+        self.matrix = nx.adjacency_matrix(G).A
         self.nodes = list(G)
 
         person1 = ro.IntVector(data[:index, 1])
@@ -826,10 +827,10 @@ class Ui_MainWindow(object):
                          spring_length=spring_length,
                          spring_constant=spring_constant, damping=damping, avoidOverlap=avoidOverlap)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Adjacency matrix' and not empty:
+        elif self.PlotSelectionCombobox.currentText() == 'Adjacency matrix':
             adjacency_matrix(self.nodes, self.matrix)
 
-        elif self.PlotSelectionCombobox.currentText() == 'Clustering coefficient' and not empty:
+        elif self.PlotSelectionCombobox.currentText() == 'Clustering coefficient':
             hist_hover(self.df_nodes, 'Clustering coef', bins=30)
 
         elif self.PlotSelectionCombobox.currentText() == 'DH layout' and not empty:
