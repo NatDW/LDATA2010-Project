@@ -13,9 +13,10 @@ from bokeh.io import output_notebook, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, Panel
 from bokeh.models.widgets import Tabs
 
-os.environ['R_HOME'] = 'C:/Program Files/R/R-3.6.2'
-os.environ["PATH"] += os.pathsep + 'C:/Program Files/R/R-3.6.2/bin/x64/'
-os.environ["PATH"] += os.pathsep + 'C:/Program Files/R/R-3.6.2/'
+os.environ['R_HOME'] = 'R-3.6.2'
+os.environ['R_USER'] = 'rpy2'
+os.environ["PATH"] += os.pathsep + 'R-3.6.2/bin/x64/'
+os.environ["PATH"] += os.pathsep + 'R-3.6.2/'
 
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as ro
@@ -47,20 +48,23 @@ def set_vars(data_local, index_local, df_local, edgeList_local, graph_local):
     edgeList = edgeList_local
     G = graph_local.copy()
 
+
 def hist_hover(dataframe, column, colors=["#2469c9", "#c9a573"], bins=30):
     # build histogram data with Numpy
-    hist, edges = np.histogram(dataframe[column], bins = bins)
+    hist, edges = np.histogram(dataframe[column], bins=bins)
     hist_df = pd.DataFrame({column: hist,
-                             "left": edges[:-1],
-                             "right": edges[1:]})
+                            "left": edges[:-1],
+                            "right": edges[1:]})
     hist_df["interval"] = [f"{left:.3f} to {right:.3f}" for left, right in zip(hist_df["left"], hist_df["right"])]
     hist_df["counting"] = hist
     # bokeh histogram with hover tool
     src = ColumnDataSource(hist_df)
-    plot = figure(plot_height = 500, plot_width = 600, title = "Clustering coefficient histogram", x_axis_label = column.capitalize(), y_axis_label = "Count")
-    plot.quad(bottom = 0, top = column,left = "left", right = "right", source = src, fill_color = colors[0], line_color = "black", fill_alpha = 0.7, hover_fill_alpha = 1.0, hover_fill_color = colors[1])
+    plot = figure(plot_height=500, plot_width=600, title="Clustering coefficient histogram",
+                  x_axis_label=column.capitalize(), y_axis_label="Count")
+    plot.quad(bottom=0, top=column, left="left", right="right", source=src, fill_color=colors[0], line_color="black",
+              fill_alpha=0.7, hover_fill_alpha=1.0, hover_fill_color=colors[1])
     # hover tool
-    hover = HoverTool(tooltips = [('Interval', '@interval'), ('Count', '@counting')])
+    hover = HoverTool(tooltips=[('Interval', '@interval'), ('Count', '@counting')])
     plot.add_tools(hover)
     # output
     output_file("test.html")
@@ -100,7 +104,6 @@ def clusters_coordinates_encounter(timestep):
 
 
 def shortest_path(person1, person2, source, target, weight=None):
-
     nodes_id = np.array(list(np.unique(np.append(np.unique(person1), np.unique(person2)))))
 
     edge_list = [None] * len(person1)
@@ -194,8 +197,8 @@ def k_core(G, k=None):
     aux = G.copy()
     aux.remove_edges_from(nx.selfloop_edges(aux))
     core = list(nx.edges(nx.k_core(aux, k)))
-    person1 = [None]*len(core)
-    person2 = [None]*len(core)
+    person1 = [None] * len(core)
+    person2 = [None] * len(core)
 
     for i in range(len(core)):
         person1[i] = core[i][0]
@@ -254,7 +257,6 @@ def adjacency_matrix(nodes_list, adj_matrix):
 def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                           path=None, weight=None, nodeDistance=120, central_gravity=0.0, spring_length=100,
                           spring_constant=0.01, damping=0.09):
-
     ro.r.assign("person1", np.array(person1))
     ro.r.assign("person2", np.array(person2))
 
@@ -344,7 +346,6 @@ def hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nod
 def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
               path=None, weight=None, nodeDistance=100, central_gravity=0.2, spring_length=200,
               spring_constant=0.05, damping=0.09):
-
     ro.r.assign("person1", np.array(person1))
     ro.r.assign("person2", np.array(person2))
 
@@ -434,7 +435,6 @@ def repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None
 def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
               path=None, weight=None, gravity_constant=-2000, central_gravity=0.3, spring_length=95,
               spring_constant=0.04, damping=0.09, avoidOverlap=0):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -488,8 +488,6 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
     ro.r(f'''
             library(igraph)
             library(visNetwork)
-            print(person1)
-            print(person2)
 
             data <- data.frame(
                 from=person1,
@@ -527,7 +525,6 @@ def barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None
 def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                  path=None, weight=None, gravity_constant=-50, central_gravity=0.01, spring_length=100,
                  spring_constant=0.08, damping=0.4, avoidOverlap=0):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -617,7 +614,6 @@ def forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=N
 
 def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
               path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -704,7 +700,6 @@ def dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
 def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                   path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -789,7 +784,6 @@ def sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
 
 def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                     path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -875,7 +869,6 @@ def sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
 
 def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -960,7 +953,6 @@ def mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
 def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1046,7 +1038,6 @@ def lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
 def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
               path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1131,7 +1122,6 @@ def kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
 def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                     path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1217,7 +1207,6 @@ def graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_siz
 
 def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
               path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1302,7 +1291,6 @@ def fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None
 
 def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                path=None, weight=None):
-
     longitude, latitude = get_coordinates()
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
@@ -1377,15 +1365,13 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
                 {mask}color.hover.background = color_map,
                 {mask2}color.hover.border = color_border,
                 group = group,
-                borderWidth = border_width
+                borderWidth = border_width,
                 x = longitude,
                 y = latitude
             )
     
-            g <- graph.data.frame(data, directed = FALSE, vertices = map)
+            g <- graph.data.frame(data, directed = FALSE, vertices = nodes)
             g.vis <- toVisNetworkData(g)
-    
-            lo <- as.matrix(map[, 11:12])
 
             p <- visNetwork(g.vis$nodes, g.vis$edges, width="100%", height = 1080) %>% 
             visOptions(highlightNearest = list(enabled = T, hover = T))
@@ -1396,7 +1382,6 @@ def geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
 def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                 path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1481,7 +1466,6 @@ def star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
 def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                 path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1566,7 +1550,6 @@ def grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
 def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                 path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1651,7 +1634,6 @@ def tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=No
 
 def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1736,7 +1718,6 @@ def gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=Non
 
 def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
                   path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
@@ -1821,7 +1802,6 @@ def circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=
 
 def visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=None, group=None,
              path=None, weight=None):
-
     ro.r.assign("person1", person1)
     ro.r.assign("person2", person2)
 
