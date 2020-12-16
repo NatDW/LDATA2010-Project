@@ -732,13 +732,17 @@ class Ui_MainWindow(object):
 
         # Here we generate the table with the nodes properties
         if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates' or self.PlotFilterCombobox.currentText() == 'Cluster home coordinates':
-            person1, person2, group1 = clusters_coordinates_encounter(timestep_value)
-            group2 = clusters_coordinates_home()
             self.df_nodes = pd.DataFrame()
-            self.df_nodes['Node'] = sorted(list(np.unique(np.append(np.unique(person1), np.unique(person2)))))
-            self.df_nodes['Infected'] = get_infected(person1, person2)
-            self.df_nodes['Encounter cluster'] = group1
-            self.df_nodes['Home cluster'] = group1
+            if self.PlotFilterCombobox.currentText() == 'Cluster encounter coordinates':
+                person1_c, person2_c, group1 = clusters_coordinates_encounter(timestep_value)
+                self.df_nodes['Node'] = sorted(list(np.unique(np.append(np.unique(person1_c), np.unique(person2_c)))))
+                self.df_nodes['Encounter cluster'] = group1
+                self.df_nodes['Infected'] = get_infected(person1_c, person2_c)
+            elif self.PlotFilterCombobox.currentText() == 'Cluster home coordinates':
+                group2 = clusters_coordinates_home()
+                self.df_nodes['Node'] = sorted(list(np.unique(np.append(np.unique(person1), np.unique(person2)))))
+                self.df_nodes['Infected'] = get_infected(person1, person2)
+                self.df_nodes['Home cluster'] = group2
 
         else:
             self.df_nodes = pd.DataFrame()
