@@ -14,9 +14,10 @@ from bokeh.io import output_notebook, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, Panel
 from bokeh.models.widgets import Tabs
 
-os.environ['R_HOME'] = "C:/Program Files/R/R-3.6.2"
-os.environ["PATH"] += os.pathsep + "C:/Program Files/R/R-3.6.2/bin/x64/"
-os.environ["PATH"] += os.pathsep + "C:/Program Files/R/R-3.6.2/"
+os.environ['R_HOME'] = "R-3.6.2"
+os.environ['R_USER'] = 'rpy2'
+os.environ["PATH"] += os.pathsep + "R-3.6.2/bin/x64/"
+os.environ["PATH"] += os.pathsep + "R-3.6.2/"
 
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as ro
@@ -29,19 +30,19 @@ rpy2.robjects.numpy2ri.activate()
 utils.chooseCRANmirror(ind=1)
 
 ro.r(f'''
-    #install.packages("igraph")
-    #install.packages("visNetwork")
-    #install.packages("networkD3")
-    #install.packages("ggplot2")
-    #install.packages("plotly")
-    #install.packages("hrbrthemes")
-    #install.packages("viridis")
-    #install.packages("heatmaply")
+    require("igraph")
+    require("visNetwork")
+    require("ggplot2")
+    require("plotly")
+    require("hrbrthemes")
+    require("viridis")
+    require("heatmaply")
     Sys.setenv(RSTUDIO_PANDOC="pandoc")
     s <- Sys.getenv("R.dll")
     ''')
 
 from to_plot import *
+
 
 class DataFrameModel(QtCore.QAbstractTableModel):
     DtypeRole = QtCore.Qt.UserRole + 1000
@@ -82,7 +83,7 @@ class DataFrameModel(QtCore.QAbstractTableModel):
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < self.rowCount() \
-            and 0 <= index.column() < self.columnCount()):
+                                       and 0 <= index.column() < self.columnCount()):
             return QtCore.QVariant()
         row = self._dataframe.index[index.row()]
         col = self._dataframe.columns[index.column()]
@@ -104,6 +105,7 @@ class DataFrameModel(QtCore.QAbstractTableModel):
             DataFrameModel.ValueRole: b'value'
         }
         return roles
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -359,7 +361,8 @@ class Ui_MainWindow(object):
         self.PlotSelectionCombobox.addItem("")
         self.PlotSelectionCombobox.addItem("")
         self.PlotSelectionCombobox.addItem("")
-        self.PlotSelectionCombobox.currentIndexChanged.connect(self.getGraphType) #Change the graph tab ONLY if the ComboBox index changed
+        self.PlotSelectionCombobox.currentIndexChanged.connect(
+            self.getGraphType)  # Change the graph tab ONLY if the ComboBox index changed
 
         # TIMESTEP SLIDER
         self.timestep_slider = QtWidgets.QSlider(self.centralwidget)
@@ -369,7 +372,7 @@ class Ui_MainWindow(object):
         self.TimestepLabel = QtWidgets.QLabel(self.centralwidget)
         self.TimestepLabel.setGeometry(QtCore.QRect(6, 494, 161, 20))
         self.TimestepLabel.setObjectName("TimestepLabel")
-        self.timestep_slider.valueChanged.connect(self.updateSliderLabel) # Update the slider label
+        self.timestep_slider.valueChanged.connect(self.updateSliderLabel)  # Update the slider label
 
         # TAB BROWSER
         self.TabBrowserWidget = QtWidgets.QTabWidget(self.centralwidget)
@@ -411,8 +414,8 @@ class Ui_MainWindow(object):
         self.ApplyChanges = QtWidgets.QPushButton(self.centralwidget)
         self.ApplyChanges.setGeometry(QtCore.QRect(14, 452, 161, 31))
         self.ApplyChanges.setObjectName("ApplyChanges")
-        self.ApplyChanges.setEnabled(False) # The button is just enabled when the user select a file
-        self.ApplyChanges.clicked.connect(self.BtnAction) # If the button is pressed, then go to the action
+        self.ApplyChanges.setEnabled(False)  # The button is just enabled when the user select a file
+        self.ApplyChanges.clicked.connect(self.BtnAction)  # If the button is pressed, then go to the action
 
         # STACKED WIDGET FOR PLOT FILTERS
         self.stackedWidget = QtWidgets.QStackedWidget(self.centralwidget)
@@ -491,7 +494,8 @@ class Ui_MainWindow(object):
         self.PlotFilterCombobox.addItem("")
         self.PlotFilterCombobox.addItem("")
         self.PlotFilterCombobox.addItem("")
-        self.PlotFilterCombobox.currentIndexChanged.connect(self.getPlotFilter) #Change the graph tab ONLY if the ComboBox index changed
+        self.PlotFilterCombobox.currentIndexChanged.connect(
+            self.getPlotFilter)  # Change the graph tab ONLY if the ComboBox index changed
 
         # SHOW INFECTED NODES CHECKBOX
         self.ShowInfectedCheckBox = QtWidgets.QCheckBox(self.centralwidget)
@@ -514,16 +518,16 @@ class Ui_MainWindow(object):
         self.actionUpload.setObjectName("actionUpload")
         self.menuFile.addAction(self.actionUpload)
         self.menubar.addAction(self.menuFile.menuAction())
-        Menu.triggered.connect(self.MenuAction)     #Menu tree actions
-        self.menuFile.addAction(self.actionUpload)  #Add upload action
+        Menu.triggered.connect(self.MenuAction)  # Menu tree actions
+        self.menuFile.addAction(self.actionUpload)  # Add upload action
 
         self.retranslateUi(MainWindow)
         self.TabBrowserWidget.setCurrentIndex(0)
         self.stackedWidget.setCurrentIndex(3)
         self.PlotOptionsStackedWidget.setCurrentIndex(4)
-        self.PlotFilterCombobox.setEnabled(False) # disable comboBox for plot filters
-        self.PlotSelectionCombobox.setEnabled(False) # disable comboBox for plot filters
-        self.ShowInfectedCheckBox.setEnabled(False) # Disabe show infected combobox
+        self.PlotFilterCombobox.setEnabled(False)  # disable comboBox for plot filters
+        self.PlotSelectionCombobox.setEnabled(False)  # disable comboBox for plot filters
+        self.ShowInfectedCheckBox.setEnabled(False)  # Disabe show infected combobox
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -573,8 +577,10 @@ class Ui_MainWindow(object):
         self.PlotSelectionCombobox.setItemText(19, _translate("MainWindow", "Circle layout"))
         self.PlotSelectionCombobox.setItemText(20, _translate("MainWindow", "Vis"))
         self.TabBrowserWidget.setTabText(self.TabBrowserWidget.indexOf(self.tab), _translate("MainWindow", "Plot"))
-        self.TabBrowserWidget.setTabText(self.TabBrowserWidget.indexOf(self.tab_2), _translate("MainWindow", "Raw data"))
-        self.TabBrowserWidget.setTabText(self.TabBrowserWidget.indexOf(self.tab_3), _translate("MainWindow", "Node data"))
+        self.TabBrowserWidget.setTabText(self.TabBrowserWidget.indexOf(self.tab_2),
+                                         _translate("MainWindow", "Raw data"))
+        self.TabBrowserWidget.setTabText(self.TabBrowserWidget.indexOf(self.tab_3),
+                                         _translate("MainWindow", "Node data"))
         self.TimestepLabel.setText(_translate("MainWindow", "Timestep: 0"))
         self.ApplyChanges.setText(_translate("MainWindow", "Apply changes"))
         self.ShortestPathHead.setText(_translate("MainWindow", "Shortest path config"))
@@ -607,10 +613,10 @@ class Ui_MainWindow(object):
         self.tableView.setModel(model)
 
         # Generate the graph
-        self.UpdatePlotGraph() # Update or generate the test.html, which contais the graph that will be injected
+        self.UpdatePlotGraph()  # Update or generate the test.html, which contais the graph that will be injected
 
         # Plot the graph
-        path = os.getcwd() # Get the absolute path from os, because it is better for PyQT5
+        path = os.getcwd()  # Get the absolute path from os, because it is better for PyQT5
         url = QtCore.QUrl.fromLocalFile(path + '/test.html')
         self.PlotWidget.load(url)
 
@@ -648,51 +654,50 @@ class Ui_MainWindow(object):
             Graph plots receive their parameters in the stacked widget on the left and statistics on the right;
             Some graphs don't receive anything.
         '''
-        #print(self.comboBox.currentText())
+        # print(self.comboBox.currentText())
         if self.PlotSelectionCombobox.currentText() == 'Hierarchical repulsion':
             self.PlotOptionsStackedWidget.setCurrentIndex(1)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
             if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
-                self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
+                self.ShowInfectedCheckBox.setEnabled(True)  # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Repulsion':
             self.PlotOptionsStackedWidget.setCurrentIndex(2)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
             if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
-                self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
+                self.ShowInfectedCheckBox.setEnabled(True)  # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Barnes hut':
             self.PlotOptionsStackedWidget.setCurrentIndex(0)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
             if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
-                self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
+                self.ShowInfectedCheckBox.setEnabled(True)  # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Forced atlas':
             self.PlotOptionsStackedWidget.setCurrentIndex(3)
             self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
             if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
-                self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
+                self.ShowInfectedCheckBox.setEnabled(True)  # enable show infected combobox
 
         elif self.PlotSelectionCombobox.currentText() == 'Clustering coefficient':
             self.PlotOptionsStackedWidget.setCurrentIndex(4)
-            self.PlotFilterCombobox.setEnabled(False) # disable comboBox for plot filters
-            self.ShowInfectedCheckBox.setEnabled(False) # Disabe show infected combobox
+            self.PlotFilterCombobox.setEnabled(False)  # disable comboBox for plot filters
+            self.ShowInfectedCheckBox.setEnabled(False)  # Disabe show infected combobox
             self.PlotFilterCombobox.setCurrentIndex(0)
 
         elif self.PlotSelectionCombobox.currentText() == 'Adjacency matrix':
             self.PlotOptionsStackedWidget.setCurrentIndex(4)
-            self.PlotFilterCombobox.setEnabled(False) # disable comboBox for plot filters
-            self.ShowInfectedCheckBox.setEnabled(False) # disable show infected combobox
+            self.PlotFilterCombobox.setEnabled(False)  # disable comboBox for plot filters
+            self.ShowInfectedCheckBox.setEnabled(False)  # disable show infected combobox
             self.PlotFilterCombobox.setCurrentIndex(0)
         else:
-            self.PlotOptionsStackedWidget.setCurrentIndex(4)  
-            self.PlotFilterCombobox.setEnabled(True)   # sets the filters available
+            self.PlotOptionsStackedWidget.setCurrentIndex(4)
+            self.PlotFilterCombobox.setEnabled(True)  # sets the filters available
             if self.PlotFilterCombobox.currentText() != 'Cluster encounter coordinates' and self.PlotFilterCombobox.currentText() != 'Cluster home coordinates':
-                self.ShowInfectedCheckBox.setEnabled(True) # enable show infected combobox
-
+                self.ShowInfectedCheckBox.setEnabled(True)  # enable show infected combobox
 
     def UpdatePlotGraph(self):
-        
+
         timestep_value = self.timestep_slider.value()
         self.plot_df = self.df[self.df['timestep'] <= timestep_value]
         self.data = self.plot_df.to_numpy()
@@ -740,7 +745,6 @@ class Ui_MainWindow(object):
             self.df_nodes['Infected'] = get_infected(person1, person2)
             self.df_nodes['Clustering coef'] = nx.clustering(G).values()
 
-
         self.df_nodes.sort_values(by='Node', inplace=True)
         self.df_nodes.reset_index(drop=True, inplace=True)
         model = DataFrameModel(self.df_nodes)
@@ -778,9 +782,11 @@ class Ui_MainWindow(object):
             spring_length = self.hierarchical_springlength.value()
             spring_constant = self.hierarchical_springconstant.value()
             damping = self.hierarchical_damping.value()
-            hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-                          path=path, weight=None, nodeDistance=node_distance, central_gravity=central_gravity, spring_length=spring_length,
-                          spring_constant=spring_constant, damping=damping)
+            hierarchicalRepulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                                  group=group,
+                                  path=path, weight=None, nodeDistance=node_distance, central_gravity=central_gravity,
+                                  spring_length=spring_length,
+                                  spring_constant=spring_constant, damping=damping)
 
         elif self.PlotSelectionCombobox.currentText() == 'Repulsion' and not empty:
             node_distance = self.repulsion_node_distance.value()
@@ -788,13 +794,12 @@ class Ui_MainWindow(object):
             spring_length = self.repulsion_springlength.value()
             spring_constant = self.repulsion_springconstant.value()
             damping = self.repulsion_damping.value()
-            path = None
-            infected = None
-            group = None
-            repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-                          path=path, weight=None, nodeDistance=node_distance, central_gravity=central_gravity, spring_length=spring_length,
-                          spring_constant=spring_constant, damping=damping)
-            
+            repulsion(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                      group=group,
+                      path=path, weight=None, nodeDistance=node_distance, central_gravity=central_gravity,
+                      spring_length=spring_length,
+                      spring_constant=spring_constant, damping=damping)
+
         elif self.PlotSelectionCombobox.currentText() == 'Barnes hut' and not empty:
             gravity_constant = self.BarnesHut_GravityCtt.value()
             central_gravity = self.BarnesHut_CentralGravity.value()
@@ -802,12 +807,11 @@ class Ui_MainWindow(object):
             spring_constant = self.BarnesHut_SpringCtt.value()
             damping = self.BarnesHut_Damping.value()
             avoidOverlap = int(self.BarnesHutOverlap.isChecked())
-            path = None
-            infected = None
-            group = None
-            barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None, gravity_constant=gravity_constant, central_gravity=central_gravity, spring_length=spring_length,
-              spring_constant=spring_constant, damping=damping, avoidOverlap=avoidOverlap)
+            barnesHut(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                      group=group,
+                      path=path, weight=None, gravity_constant=gravity_constant, central_gravity=central_gravity,
+                      spring_length=spring_length,
+                      spring_constant=spring_constant, damping=damping, avoidOverlap=avoidOverlap)
 
         elif self.PlotSelectionCombobox.currentText() == 'Forced atlas' and not empty:
             gravity_constant = self.ForcedAtlas_GravityCtt.value()
@@ -816,12 +820,11 @@ class Ui_MainWindow(object):
             spring_constant = self.ForcedAtlas_SpringCtt.value()
             damping = self.ForcedAtlas_Damping.value()
             avoidOverlap = int(self.ForcedAtlasOverlap.isChecked())
-            path = None
-            infected = None
-            group = None
-            forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-                 path=path, weight=None, gravity_constant=gravity_constant, central_gravity=central_gravity, spring_length=spring_length,
-                 spring_constant=spring_constant, damping=damping, avoidOverlap=avoidOverlap)
+            forced_atlas(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                         group=group,
+                         path=path, weight=None, gravity_constant=gravity_constant, central_gravity=central_gravity,
+                         spring_length=spring_length,
+                         spring_constant=spring_constant, damping=damping, avoidOverlap=avoidOverlap)
 
         elif self.PlotSelectionCombobox.currentText() == 'Adjacency matrix' and not empty:
             adjacency_matrix(self.nodes, self.matrix)
@@ -830,109 +833,78 @@ class Ui_MainWindow(object):
             hist_hover(self.df_nodes, 'Clustering coef', bins=30)
 
         elif self.PlotSelectionCombobox.currentText() == 'DH layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            dh_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                      group=group,
+                      path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'Sphere layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            sphere_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                          group=group,
+                          path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'Sugiyama layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            sugiyama_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                            group=group,
+                            path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'MDS layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            mds_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                       group=group,
+                       path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'LGL layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            lgl_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                       group=group,
+                       path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'KK layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            kk_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                      group=group,
+                      path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'Graphopt layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            graphopt_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                            group=group,
+                            path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'FR layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+            fr_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                      group=group,
+                      path=path, weight=None)
 
         elif self.PlotSelectionCombobox.currentText() == 'Star layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
-        
+            star_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                        group=group,
+                        path=path, weight=None)
+
         elif self.PlotSelectionCombobox.currentText() == 'Grid layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
-        
+            grid_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                        group=group,
+                        path=path, weight=None)
+
         elif self.PlotSelectionCombobox.currentText() == 'Geo layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
-        
+            geo_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                       group=group,
+                       path=path, weight=None)
+
         elif self.PlotSelectionCombobox.currentText() == 'Tree layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
-        
+            tree_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                        group=group,
+                        path=path, weight=None)
+
         elif self.PlotSelectionCombobox.currentText() == 'Gem layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
-        
+            gem_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                       group=group,
+                       path=path, weight=None)
+
         elif self.PlotSelectionCombobox.currentText() == 'Circle layout' and not empty:
-            path = None
-            infected = None
-            group = None
-            circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
-        
+            circle_layout(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected,
+                          group=group,
+                          path=path, weight=None)
+
         elif self.PlotSelectionCombobox.currentText() == 'Vis' and not empty:
-            path = None
-            infected = None
-            group = None
             visGraph(person1, person2, color_map=None, edge_width=None, nodes_size=None, infected=infected, group=group,
-              path=path, weight=None)
+                     path=path, weight=None)
 
     def MenuAction(self, action):
         '''
@@ -947,7 +919,8 @@ class Ui_MainWindow(object):
         '''
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(MainWindow,"QFileDialog.getOpenFileName()", "","CSV Files (*.csv)", options=options)
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "QFileDialog.getOpenFileName()", "",
+                                                            "CSV Files (*.csv)", options=options)
         if fileName:
             self.df = pd.read_csv(fileName)
             minimum_timestep = self.df['timestep'].min()
@@ -957,9 +930,9 @@ class Ui_MainWindow(object):
             timestep_value = maximum_timestep
             self.ApplyChanges.setEnabled(True)
             self.PlotOptionsStackedWidget.setCurrentIndex(1)
-            self.PlotFilterCombobox.setEnabled(True) # disable comboBox for plot filters
-            self.PlotSelectionCombobox.setEnabled(True) # disable comboBox for plot filters
-            self.ShowInfectedCheckBox.setEnabled(True) # Disabe show infected combobox
+            self.PlotFilterCombobox.setEnabled(True)  # disable comboBox for plot filters
+            self.PlotSelectionCombobox.setEnabled(True)  # disable comboBox for plot filters
+            self.ShowInfectedCheckBox.setEnabled(True)  # Disabe show infected combobox
 
     def updateSliderLabel(self, value):
         '''
@@ -970,7 +943,7 @@ class Ui_MainWindow(object):
     def headerClicked(self, logicalIndex):
         self.order = self.header.sortIndicatorOrder()
         self.plot_df.sort_values(self.plot_df.columns[logicalIndex],
-                        ascending=self.order,inplace=True)
+                                 ascending=self.order, inplace=True)
         self.model = DataFrameModel(self.plot_df)
         self.plot_df.reset_index(drop=True, inplace=True)
         self.tableView.setModel(self.model)
@@ -979,14 +952,16 @@ class Ui_MainWindow(object):
     def headerClicked_2(self, logicalIndex):
         self.order_2 = self.header_2.sortIndicatorOrder()
         self.df_nodes.sort_values(self.df_nodes.columns[logicalIndex],
-                        ascending=self.order_2,inplace=True)
+                                  ascending=self.order_2, inplace=True)
         self.model = DataFrameModel(self.df_nodes)
         self.df_nodes.reset_index(drop=True, inplace=True)
         self.tableView_2.setModel(self.model)
         self.tableView_2.update()
 
+
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
