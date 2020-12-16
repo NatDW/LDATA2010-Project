@@ -13,15 +13,15 @@ from bokeh.io import output_notebook, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, Panel
 from bokeh.models.widgets import Tabs
 
-os.environ['R_HOME'] = 'R-3.6.2'
-os.environ['R_USER'] = 'rpy2'
-os.environ["PATH"] += os.pathsep + 'R-3.6.2/bin/x64/'
-os.environ["PATH"] += os.pathsep + 'R-3.6.2/'
+os.environ['R_HOME'] = 'C:/Program Files/R/R-3.6.2'
+os.environ["PATH"] += os.pathsep + 'C:/Program Files/R/R-3.6.2/bin/x64/'
+os.environ["PATH"] += os.pathsep + 'C:/Program Files/R/R-3.6.2/'
 
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as ro
 import rpy2.robjects.numpy2ri
 
+rpy2.robjects.numpy2ri.activate()
 base = rpackages.importr("base")
 utils = rpackages.importr("utils")
 
@@ -220,7 +220,7 @@ def depth(G, source=None, depth=None):
 
 
 def adjacency_matrix(nodes_list, adj_matrix):
-    ro.r.assign("nodes_list", nodes_list)
+    ro.r.assign("nodes_list", np.array(nodes_list))
     ro.r.assign("adj_matrix", adj_matrix)
     try:
         ro.r('''
